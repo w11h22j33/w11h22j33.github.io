@@ -4,7 +4,7 @@
   <subtitle><![CDATA[IOS & Android]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://w11h22j33.github.io/myblog//"/>
-  <updated>2014-03-17T05:59:27.138Z</updated>
+  <updated>2014-04-08T01:53:14.969Z</updated>
   <id>http://w11h22j33.github.io/myblog//</id>
   
   <author>
@@ -13,6 +13,62 @@
   </author>
   
   <generator uri="http://zespia.tw/hexo/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[]]></title>
+    <link href="http://w11h22j33.github.io/myblog/2014/04/08/ioscrashlog/"/>
+    <id>http://w11h22j33.github.io/myblog/2014/04/08/ioscrashlog/</id>
+    <published>2014-04-08T01:47:40.000Z</published>
+    <updated>2014-04-08T01:47:40.000Z</updated>
+    <content type="html"><![CDATA[<h1 id="一、WHY_CRASH？ios应用crash的四种类型">一、WHY CRASH？ios应用crash的四种类型</h1>
+<ul>
+<li>程序崩溃: 经常发生于内存访问出错,或者其他的程序错误，常见原因：</li>
+</ul>
+<blockquote>
+<p>1、访问某个对象不存在的属性。<br>2、访问已经被dealloc的对象。<br>3、多线程操作数组，在一个线程里快速遍历某个数组，但在另一个线程里往数组里添加对象。<br>4、往字典里用setObject 方法添加一个值为nil的键值对。</p>
+</blockquote>
+<ul>
+<li>内存不足: 系统因为没有足够的内存满足程序需求从而杀死程序出现这种日志.它不同于其他日志的是它没有程序各线程的堆栈信息。怎么办呢？ </li>
+</ul>
+<blockquote>
+<p>1、管理好自己的内存，在此不做细述；<br>2、处理系统内存警告。app收到Memory Warning后会调用：<br>UIApplication::didReceiveMemoryWarning -&gt; UIApplicationDelegate::applicationDidReceiveMemoryWarning -&gt; 调用当前所有的 viewController进行处理。<br>因此处理的主要工作是在viewController。</p>
+</blockquote>
+<ul>
+<li><p>强制退出:异常代码 0xdeadfa11. 这出现在用户在程序界面按下关机键直到出现”移动滑块关机”,然后长按Home键.用户之所以这么做,很可能因为你的程序无响应,当然也不一定.</p>
+</li>
+<li><p>响应超时: 异常代码 0x8badf00d。避免阻塞主线程。</p>
+</li>
+</ul>
+<h1 id="二、WHERE_CRASH">二、WHERE CRASH</h1>
+<p> iPhone真机上Crash文件的存储路径为：/var/mobile/Library/Logs/CrashReporter<br>      我们可以从xcode的organizer的device log中获取指定应用的crash信息文件<br>      选中我们关注的应用app，找到关心的异常时间的crash记录，点击右键，选择”Reveal Log in Finder”保存到dSYM文件目录下。</p>
+<h1 id="三、WHEN_CRASH">三、WHEN CRASH</h1>
+<blockquote>
+<p>任何语言都有异常的处理机制，Objective-C也不例外。与C++/Java类似的语法，它也提供@try, @catch, @throw, @finally关键字。</p>
+</blockquote>
+<ul>
+<li>同时对于系统Crash而引起的程序异常退出，可以通过UncaughtExceptionHandler机制捕获；也就是说在程序中catch以外的内容，被系统自带的错误处理而捕获。我们要做的就是用自定义的函数替代该ExceptionHandler即可。</li>
+</ul>
+<p><a href="http://blog.csdn.net/jaywon/article/details/7459064" target="_blank">详见：获取普通用户 iOS 设备上的 Crash Log 的方法</a></p>
+<h1 id="四、How_to_Analyse_Crash_Log">四、How to Analyse Crash Log</h1>
+<ul>
+<li><p>借助Xcode</p>
+</li>
+<li><p>手动运行symbolicatecrash工具</p>
+</li>
+</ul>
+<blockquote>
+<p>需要三个东西，第一,crash文件，第二，symbolicatecrash，第三，dysm和app文件<br>.</p>
+<ol>
+<li>在桌面创建一个临时文件夹,如crash<br>.</li>
+<li>首先要从设备中导出crash文件,最简单直接的办法是设备连接到mac上，打开xcode的organizer，然后选择其顶端选中devices，在左边的列表里，就能显示出当前连接的设备信息，选择当前设备下的device logs，等待片刻，中间的列表里会出现很多panic的信息，按照时间排序可以找到最近崩溃的crash，然后右键导出此文件.文件名自动保存为.crash文件，形如: xxx<em>2013-08-15-200743</em>-iPad.crash, 将这个文件拷入第一步创建的临时文件夹。<br>.</li>
+<li>symbolicatecrash是xcode自带的工具，为了方便调用，可以做一个快捷方式，方便在任意路径下调用。<br>首先在termail下，输入find /Applications/Xcode.app -name symbolicatecrash -type f，用来查找symbolicatecrash的真实位置，<br>一般情况下，会返回如下路径<br>/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/PrivateFrameworks/DTDeviceKit.framework/Versions/A/Resources/symbolicatecrash<br>.<br>下一步建立快捷方式<br>sudo ln -s “/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/PrivateFrameworks/DTDeviceKit.framework/Versions/A/Resources/symbolicatecrash”  /usr/local/bin/symbolicatecrash<br>.<br>3.dysm文件存在于最后发包的机器上，使用打开xcode的organizer,选择顶部的archives，看到最后的发包记录，选择distribute保存为相应的archive文件，查看包内容，里面有我们需要的.dSYM文件<br>.<br>app文件用刚才同样的方法，dictribute保存为ipa文件，把文件名扩展名改为zip，解压后可以得到最后的app文件。将这两个文件拷入第一步创建的临时文件夹备用<br>.<br>万事俱备，只差最后一步，termail下进入第一步创建的临时文件夹，<br>.<br>使用命令 symbolicatecrash xxxx.crash  xxxx.dsym &gt; crash.text   将最后分析出来的文件保存在crash.txt文件中<br>.<br>形如 symbolicatecrash xxx_2013-08-15-200743_iPad.crash xxxx.app.dSYM &gt;crash.txt<br>.<br>注意，一般情况下，第一次使用symbolicatecrash会产生一个error，如下的错误信息。<br>.<br>Error: “DEVELOPER_DIR” is not defined at /usr/local/bin/symbolicatecrash line 53.<br>解决办法是输入export DEVELOPER_DIR=”/Applications/XCode.app/Contents/Developer</li>
+</ol>
+</blockquote>
+<h6 id="然后，然后神码现出原形啦！">然后，然后神码现出原形啦！</h6>
+]]></content>
+    
+    
+  </entry>
   
   <entry>
     <title><![CDATA[第一篇]]></title>
