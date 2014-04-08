@@ -133,32 +133,28 @@
         <div class="entry">
         
           <h1 id="一、WHY_CRASH？ios应用crash的四种类型">一、WHY CRASH？ios应用crash的四种类型</h1>
+<p>1、程序崩溃: 经常发生于内存访问出错,或者其他的程序错误，常见原因：</p>
 <ul>
-<li>程序崩溃: 经常发生于内存访问出错,或者其他的程序错误，常见原因：</li>
+<li>访问某个对象不存在的属性。</li>
+<li>访问已经被dealloc的对象。</li>
+<li>多线程操作数组，在一个线程里快速遍历某个数组，但在另一个线程里往数组里添加对象。</li>
+<li>往字典里用setObject 方法添加一个值为nil的键值对。</li>
 </ul>
-<blockquote>
-<p>1、访问某个对象不存在的属性。<br>2、访问已经被dealloc的对象。<br>3、多线程操作数组，在一个线程里快速遍历某个数组，但在另一个线程里往数组里添加对象。<br>4、往字典里用setObject 方法添加一个值为nil的键值对。</p>
-</blockquote>
+<p>2、内存不足: 系统因为没有足够的内存满足程序需求从而杀死程序出现这种日志.它不同于其他日志的是它没有程序各线程的堆栈信息。怎么办呢？ </p>
 <ul>
-<li>内存不足: 系统因为没有足够的内存满足程序需求从而杀死程序出现这种日志.它不同于其他日志的是它没有程序各线程的堆栈信息。怎么办呢？ </li>
+<li>管理好自己的内存，在此不做细述；</li>
+<li>处理系统内存警告。app收到Memory Warning后会调用：<br>UIApplication::didReceiveMemoryWarning -&gt; UIApplicationDelegate::applicationDidReceiveMemoryWarning -&gt; 调用当前所有的 viewController进行处理。<br>因此处理的主要工作是在viewController。</li>
 </ul>
-<blockquote>
-<p>1、管理好自己的内存，在此不做细述；<br>2、处理系统内存警告。app收到Memory Warning后会调用：<br>UIApplication::didReceiveMemoryWarning -&gt; UIApplicationDelegate::applicationDidReceiveMemoryWarning -&gt; 调用当前所有的 viewController进行处理。<br>因此处理的主要工作是在viewController。</p>
-</blockquote>
-<ul>
-<li><p>强制退出:异常代码 0xdeadfa11. 这出现在用户在程序界面按下关机键直到出现”移动滑块关机”,然后长按Home键.用户之所以这么做,很可能因为你的程序无响应,当然也不一定.</p>
-</li>
-<li><p>响应超时: 异常代码 0x8badf00d。避免阻塞主线程。</p>
-</li>
-</ul>
+<p>3、强制退出:异常代码 0xdeadfa11. 这出现在用户在程序界面按下关机键直到出现”移动滑块关机”,然后长按Home键.用户之所以这么做,很可能因为你的程序无响应,当然也不一定.</p>
+<p>4、响应超时: 异常代码 0x8badf00d。避免阻塞主线程。</p>
 <h1 id="二、WHERE_CRASH">二、WHERE CRASH</h1>
 <p> iPhone真机上Crash文件的存储路径为：/var/mobile/Library/Logs/CrashReporter<br>      我们可以从xcode的organizer的device log中获取指定应用的crash信息文件<br>      选中我们关注的应用app，找到关心的异常时间的crash记录，点击右键，选择”Reveal Log in Finder”保存到dSYM文件目录下。</p>
 <h1 id="三、WHEN_CRASH">三、WHEN CRASH</h1>
-<blockquote>
-<p>任何语言都有异常的处理机制，Objective-C也不例外。与C++/Java类似的语法，它也提供@try, @catch, @throw, @finally关键字。</p>
-</blockquote>
 <ul>
-<li>同时对于系统Crash而引起的程序异常退出，可以通过UncaughtExceptionHandler机制捕获；也就是说在程序中catch以外的内容，被系统自带的错误处理而捕获。我们要做的就是用自定义的函数替代该ExceptionHandler即可。</li>
+<li><p>任何语言都有异常的处理机制，Objective-C也不例外。与C++/Java类似的语法，它也提供@try, @catch, @throw, @finally关键字。</p>
+</li>
+<li><p>同时对于系统Crash而引起的程序异常退出，可以通过UncaughtExceptionHandler机制捕获；也就是说在程序中catch以外的内容，被系统自带的错误处理而捕获。我们要做的就是用自定义的函数替代该ExceptionHandler即可。</p>
+</li>
 </ul>
 <p><a href="http://blog.csdn.net/jaywon/article/details/7459064" target="_blank">详见：获取普通用户 iOS 设备上的 Crash Log 的方法</a></p>
 <h1 id="四、How_to_Analyse_Crash_Log">四、How to Analyse Crash Log</h1>
